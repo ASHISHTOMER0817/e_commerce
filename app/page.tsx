@@ -8,19 +8,37 @@ import Link from "next/link";
 
 export default function Home() {
 	const [data, setData] = useState<Clothes[]>();
+	// const [query, setQuery] = useState('products')
+	const [productId, setProductId] = useState('')
+	// const [payload, setPayload] = useState({
+	// 	query,
+	// 	productId
+	// })
+	// const [productObjectId, setProductObjectId] = useState('')
 
 	useEffect(() => {
 		async function getData() {
 			try {
-				const res = await axios.get("/api/dashboard");
-				console.log(res.data.data);
-				setData(res.data.data);
+				
+				const res = await axios.get(`/api/dashboard?productId=${productId}`);
+				if(!productId)
+				{
+					console.log(res.data.data);
+					setData(res.data.data);
+				} 
+				console.log(res.data.message)
 			} catch (error) {
 				console.log("server failed", error);
 			}
 		}
 		getData();
-	}, []);
+	}, [productId]);
+
+	// async function addToCart(){
+	// 	try{
+	// 		const res = await axios.get()
+	// 	}
+	// }
 
 	// async function paymentGateway() {
 
@@ -51,22 +69,18 @@ export default function Home() {
 				{data
 					? data.map(
 							(
-								{
+								{ 	_id,
 									url,
 									name,
 									price,
-								}: {
-									url: string;
-									name: string;
-									price: number;
 								},
 								index
 							) => {
 								return (
-									<Link
+									<div
 										key={index}
 										className="flex flex-col gap-1 "
-										href={"/checkout"}
+										
 									>
 										<Image
 											className="h-80 w-auto"
@@ -77,18 +91,18 @@ export default function Home() {
 										/>
 										<h4>{name}</h4>
 										<h5>{price}</h5>
-										<button className="px-5 py-2 border border-gray-900 hover:bg-gray-800  rounded-3xl">
+										<button type="button" onClick={()=>setProductId(_id)} className="px-5 py-2 border border-gray-900 hover:bg-gray-800  rounded-3xl">
 											Add to cart
 										</button>
-										<button role=""
+										<Link href={"/checkout"}
 											// onClick={
 											// 	paymentGateway
 											// }
-											className="px-5 py-2 border border-gray-900 hover:bg-gray-800 rounded-3xl"
+											className="px-5 py-2 border text-center border-gray-900 hover:bg-gray-800 rounded-3xl"
 										>
-											Buy{" "}
-										</button>
-									</Link>
+											Buy
+										</Link>
+									</div>
 								);
 							}
 					  )

@@ -1,7 +1,8 @@
 interface Clothes {
       url:string,
       name:string,
-      price:number
+      price:number,
+      _id:string
 };
 
 interface User {
@@ -9,4 +10,9 @@ interface User {
       password:string
 };
 
-export type {Clothes, User};
+interface Order {
+      user:User,
+      product:Clothes
+}
+
+export type {Clothes, User, Order};

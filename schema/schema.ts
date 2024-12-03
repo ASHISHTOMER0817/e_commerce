@@ -1,15 +1,22 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-const clothesName = new mongoose.Schema({
+const clothSchema = new Schema({
       name: String,
       url:String,
       price:Number,
 })
 
-const user = new mongoose.Schema({
+const userSchema = new Schema({
       name: String,
+      email:String,
       password: String,
 })
+export const clothes = mongoose.models.clothes || mongoose.model('clothes', clothSchema)
+export const users = mongoose.models.users || mongoose.model('users', userSchema)
 
-export const clothes = mongoose.models.clothes || mongoose.model('clothes', clothesName)
-export const users = mongoose.models.users || mongoose.model('users', user)
+const ordersSchema = new Schema({
+      user:{type:mongoose.Schema.Types.ObjectId, ref:'users'},
+      product:{type:mongoose.Schema.Types.ObjectId, ref:'clothes'}
+})
+
+export const Orders = mongoose.models.orders || mongoose.model('orders', ordersSchema)

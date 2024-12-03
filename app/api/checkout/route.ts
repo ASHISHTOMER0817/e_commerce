@@ -1,39 +1,28 @@
-import dbconnection from "@/db/dbconnection";
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
+import dbconnection from "@/db/dbconnection";
+import { cookies } from "next/headers";
+import { Orders } from "@/schema/schema";
+export async function GET(){
 
-export async function GET() {
+      dbconnection()
+      try{
+            const cookie = await cookies()
+            const user = cookie.get('user')?.value
+            if(!user) return NextResponse.json({
+                  message:'token missing'
+            })
+            const parsedData = JSON.parse(user)
+            console.log(parsedData)
+            const userOrders = await Orders.find({user:parsedData._id}).populate('user').populate('product').exec()
+            console.log(userOrders)
 
-      await dbconnection()
-      try {
-            console.log(1)
-            const stripe = new Stripe('sk_test_51OximYSBnrUlVANBWuJnkEQqgzzybtNBnPuC3v8vtcEj475dmBLMULuRxMhb8ObPAEoweilqaQw7b5vkQlk1Hu2R00OydQNaTd')
-            console.log('2')
-            const session = await stripe.checkout.sessions.create({
-                  line_items: [
-                        {
-                          price_data: {
-                            currency: 'usd',          // Replace 'usd' with your currency (e.g., 'inr')
-                            product_data: {
-                              name: 'Your Product Name', // Replace with your product name
-                            },
-                            unit_amount: 1000,        // Amount in smallest currency unit (e.g., cents for USD)
-                          },
-                          quantity: 1,
-                        },
-                      ],
-                  mode: 'payment',
-                  success_url: `https://www.bing.com/search?pglt=899&q=heretic+movie&cvid=75ba283702fa4943afa832328580dbec&gs_lcrp=EgRlZGdlKgkIABBFGDsY-QcyCQgAEEUYOxj5BzIGCAEQABhAMgYIAhAAGEAyBggDEC4YQDIGCAQQRRg5MgYIBRAAGEAyBggGEAAYQDIGCAcQABhAMgYICBBFGDzSAQgzNDQ0ajBqMagCCLACAQ&FORM=ANNTA1&PC=W069`,
-                  cancel_url: `https://www.bing.com/search?pglt=899&q=heretic+movie&cvid=75ba283702fa4943afa832328580dbec&gs_lcrp=EgRlZGdlKgkIABBFGDsY-QcyCQgAEEUYOxj5BzIGCAEQABhAMgYIAhAAGEAyBggDEC4YQDIGCAQQRRg5MgYIBRAAGEAyBggGEAAYQDIGCAcQABhAMgYICBBFGDzSAQgzNDQ0ajBqMagCCLACAQ&FORM=ANNTA1&PC=W069`,
-            });
+            return NextResponse.json({
+                  message:'showing orders', data:userOrders,
+            })
 
-
-            console.log('3')
-            return NextResponse.json({url:session.url});
-      } catch (error) { // Add 'error' parameter
-            console.error('Server failed:', error);  // Log the exact error
-            return NextResponse.json({ message: "It didn't work"+ error });
-        }
-        
-};
-
+      }catch(error){
+            return NextResponse.json({
+                  message:'server error' + error
+            })
+      }
+}
