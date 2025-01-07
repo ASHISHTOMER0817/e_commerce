@@ -6,18 +6,23 @@ import { loadStripe } from "@stripe/stripe-js";
 import Image from "next/image";
 import { Order } from "../components/datatypes";
 
-const stripePromise = loadStripe(process.env.PUBLISHABLE_KEY ?? "");
+// const stripePromise = ;
 
 function Checkout() {
 	const [result, setResult] = useState();
 	const [data, setData] = useState<Order[]>();
+	// const [selectedProduct, setSelectedProduct] = useState<string[]>([]);
+	const [checkedArr, setCheckedArr] = useState<{objectId:string,option:boolean}[]>([]);
 
 	useEffect(() => {
 		async function getData() {
 			try {
 				const res = await axios.get("/api/checkout");
-				console.log(res.data.message, res.data.data)
+				console.log(res.data.message, res.data.data);
 				setData(res.data.data);
+				setCheckedArr(
+					new Array(res.data.data.length).fill({objectId:'', option:false})
+				);
 			} catch (error) {
 				console.error("server failed" + error);
 			}
@@ -26,16 +31,24 @@ function Checkout() {
 	}, []);
 	async function checkout() {
 		try {
-			await stripePromise;
-			const res = await axios.get("/api/payment");
+			await loadStripe("pk_test_51OximYSBnrUlVANBpDrKw2qt87nI89sTE14IwAH8YZnUVC3EHGrfVHE0UzeGq7II2b8BwukuLb95xp4XbInmp8by00ytlJHqHP");
+			console.log('this is product arr',checkedArr)
+			const res = await axios.post("/api/payment", checkedArr);
 			window.location.href = res.data.url;
 			setResult(res.data.message);
-		} catch {
-			console.error("server failed");
+		} catch(error) {
+			console.error("server failed" + error);
 		}
 	}
+
+	function StateOfCheckbox(index:number, option:boolean, objectId:string){
+		const CheckedArrCopy = [...checkedArr]
+		CheckedArrCopy[index] = {objectId, option};
+		setCheckedArr(CheckedArrCopy)
+		console.log(checkedArr)
+	}
 	return (
-		<>
+		<div>
 			<table>
 				<thead>
 					<tr>
@@ -51,23 +64,37 @@ function Checkout() {
 										product,
 									}: {
 										product: {
-											url: string;
-											name: string;
-											price: number;
+											_id:string,
+											imgUrl:string,
+											name:string,
+											price:number,
 										};
 									},
 									index
 								) => (
 									<tr key={index}>
 										<td>
-											<input type="checkbox" />
+											<input
+												type="checkbox"
+												checked={
+													checkedArr[index].option
+												}
+												onChange={(
+													e
+												) =>StateOfCheckbox(index, e.target.checked, product._id) }
+											/>
 										</td>
 										<td>
 											<div>
-												<Image width={200}
-												height={150}
+												<Image
+													width={
+														200
+													}
+													height={
+														150
+													}
 													src={
-														product.url
+														product.imgUrl
 													}
 													alt={
 														product.name
@@ -80,10 +107,40 @@ function Checkout() {
 													product.price
 												}
 												<select
+													className="text-black"
 													name=""
 													id=""
 												>
-													<option value="">helo</option>
+													{[
+														1,
+														2,
+														3,
+														4,
+														5,
+														6,
+														7,
+														8,
+														9,
+														10,
+													].map(
+														(
+															count,
+															index
+														) => {
+															return (
+																<option
+																	key={
+																		index
+																	}
+																	value=""
+																>
+																	{
+																		count
+																	}
+																</option>
+															);
+														}
+													)}
 												</select>
 											</div>
 										</td>
@@ -101,7 +158,7 @@ function Checkout() {
 				checkout
 			</button>
 			<div>{result}</div>
-		</>
+		</div>
 	);
 }
 

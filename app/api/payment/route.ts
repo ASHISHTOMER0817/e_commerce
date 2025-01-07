@@ -1,32 +1,37 @@
 import dbconnection from "@/db/dbconnection";
-import { NextResponse } from "next/server";
+import { Products } from "@/schema/schema";
+import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
-export async function GET() {
-
+export async function POST(request: NextRequest) {
   await dbconnection()
   try {
     console.log(1)
-    const stripe = new Stripe(process.env.SECRET_KEY ?? '' )
+    const stripe = new Stripe("sk_test_51OximYSBnrUlVANBWuJnkEQqgzzybtNBnPuC3v8vtcEj475dmBLMULuRxMhb8ObPAEoweilqaQw7b5vkQlk1Hu2R00OydQNaTd")
     console.log('2')
-    const session = await stripe.checkout.sessions.create({
-      line_items: [
-        {
-          price_data: {
-            currency: 'inr',          // Replace 'usd' with your currency (e.g., 'inr')
-            product_data: {
-              name: 'Your Product Name', // Replace with your product name
-            },
-            unit_amount: 1000,        // Amount in smallest currency unit (e.g., cents for USD)
+    const products: { objectId: string, option: boolean }[] = await request.json()
+    const objectIdArr = products.map(product => product.objectId)
+    const CartProducts = await Products.find({ _id: { $in: objectIdArr } })
+    const items = CartProducts.map(({ name, price, url }: { name: string, price: number, url:string }) => {
+      return {
+        price_data: {
+          currency: 'inr',
+          product_data: {
+            name: name,
+            images: [url],
           },
-          quantity: 1,
+          unit_amount: price *100
         },
-      ],
+        quantity: 1
+      }
+    })
+    const session = await stripe.checkout.sessions.create({
+      line_items: items,
+      
       mode: 'payment',
-      success_url: `https://www.bing.com/search?pglt=899&q=heretic+movie&cvid=75ba283702fa4943afa832328580dbec&gs_lcrp=EgRlZGdlKgkIABBFGDsY-QcyCQgAEEUYOxj5BzIGCAEQABhAMgYIAhAAGEAyBggDEC4YQDIGCAQQRRg5MgYIBRAAGEAyBggGEAAYQDIGCAcQABhAMgYICBBFGDzSAQgzNDQ0ajBqMagCCLACAQ&FORM=ANNTA1&PC=W069`,
-      cancel_url: `https://www.bing.com/search?pglt=899&q=heretic+movie&cvid=75ba283702fa4943afa832328580dbec&gs_lcrp=EgRlZGdlKgkIABBFGDsY-QcyCQgAEEUYOxj5BzIGCAEQABhAMgYIAhAAGEAyBggDEC4YQDIGCAQQRRg5MgYIBRAAGEAyBggGEAAYQDIGCAcQABhAMgYICBBFGDzSAQgzNDQ0ajBqMagCCLACAQ&FORM=ANNTA1&PC=W069`,
+      success_url: `https://www.bing.com/search?pglt=899&q=stripe&cvid=84b97efb72c74deeb007ea096da8a33e&gs_lcrp=EgRlZGdlKgYIABBFGDsyBggAEEUYOzIGCAEQABhAMgYIAhAAGEAyBggDEAAYQDIGCAQQABhAMgYIBRAAGEAyBggGEAAYQDIGCAcQRRg8MgYICBBFGDzSAQkxMjcwMmowajGoAgiwAgE&FORM=ANNTA1&PC=W069`,
+      cancel_url: `https://www.bing.com/search?pglt=899&q=stripe&cvid=84b97efb72c74deeb007ea096da8a33e&gs_lcrp=EgRlZGdlKgYIABBFGDsyBggAEEUYOzIGCAEQABhAMgYIAhAAGEAyBggDEAAYQDIGCAQQABhAMgYIBRAAGEAyBggGEAAYQDIGCAcQRRg8MgYICBBFGDzSAQkxMjcwMmowajGoAgiwAgE&FORM=ANNTA1&PC=W069`,
     });
-
 
     console.log('3')
     return NextResponse.json({ url: session.url });

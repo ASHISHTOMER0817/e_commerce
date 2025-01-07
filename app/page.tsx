@@ -3,11 +3,11 @@ import Image from "next/image";
 // import Stripe from "stripe";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Clothes } from "./components/datatypes";
+import { Product } from "./components/datatypes";
 import Link from "next/link";
 
 export default function Home() {
-	const [data, setData] = useState<Clothes[]>();
+	const [data, setData] = useState<Product[]>();
 	// const [query, setQuery] = useState('products')
 	const [productId, setProductId] = useState('')
 	// const [payload, setPayload] = useState({
@@ -20,7 +20,7 @@ export default function Home() {
 		async function getData() {
 			try {
 				
-				const res = await axios.get(`/api/dashboard?productId=${productId}`);
+				const res = await axios.get(`/api/allProducts?productId=${productId}`);
 				if(!productId)
 				{
 					console.log(res.data.data);
@@ -63,6 +63,8 @@ export default function Home() {
 	// }
 	return (
 		<div>
+			<Link href="/api/auth/login">Login</Link>
+			<Link href="/api/auth/logout">logout</Link>
 			<header>header</header>
 
 			<section className="flex flex-wrap gap-5">
@@ -70,7 +72,7 @@ export default function Home() {
 					? data.map(
 							(
 								{ 	_id,
-									url,
+									imgUrl,
 									name,
 									price,
 								},
@@ -86,7 +88,7 @@ export default function Home() {
 											className="h-80 w-auto"
 											width={150}
 											height={200}
-											src={url}
+											src={imgUrl}
 											alt={"img"}
 										/>
 										<h4>{name}</h4>

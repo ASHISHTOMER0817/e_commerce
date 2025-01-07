@@ -1,7 +1,9 @@
-interface Clothes {
-      url:string,
+interface Product {
+      imgUrl:string,
       name:string,
       price:number,
+      colors:string[],
+      selectedTags:string[],
       _id:string
 };
 
@@ -12,7 +14,7 @@ interface User {
 
 interface Order {
       user:User,
-      product:Clothes
+      product:Product
 }
 
-export type {Clothes, User, Order};
+export type {Product, User, Order};

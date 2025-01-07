@@ -1,7 +1,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import dbconnection from "@/db/dbconnection";
-import { clothes, Orders } from "@/schema/schema";
+import { Products, Orders } from "@/schema/schema";
 import mongoose from "mongoose";
 import { cookies } from "next/headers";
 
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
             console.log(productId)
             let allClothes;
             if (!productId) {
-                  allClothes = await clothes.find({})
+                  allClothes = await Products.find({})
                   return NextResponse.json({
                         message: 'u r being shown clothes', data: allClothes
                   })
